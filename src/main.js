@@ -14,6 +14,8 @@ import {ajaxPrefix} from './common/const.js'
 */
 Vue.prototype._uploadFilePath = ajaxPrefix + '/common/upload'
 
+Vue.prototype._downloadFilePath = 'http://localhost:8023/'
+
 Vue.config.productionTip = false
 Vue.prototype.$http = axiosIntence
 Vue.use(ElementUI)

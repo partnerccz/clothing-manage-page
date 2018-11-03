@@ -1,5 +1,6 @@
 <template>
   <div>
+    <el-button type="primary" size="small" @click="add">添加</el-button>
     <!--@row-dblclick="showStandardList"-->
     <!--@selection-change="selectChange"-->
     <!--:default-sort="orderInfo"-->
@@ -143,6 +144,11 @@ export default {
       this.pageInfo.pageSize = val
       localStorage.setItem(localStorageKeys.productPageSize, val)
       this.getProducts()
+    },
+    add: function () { // 添加记录
+      this.editCompName = 'productEdit'
+      this.editRowId = null
+      this.showEdit = true
     },
     edit: function (row) { // 显示编辑窗口
       this.editCompName = 'productEdit'

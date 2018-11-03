@@ -5,23 +5,23 @@
     <el-form-item label="商品名" prop="name">
       <el-input v-model="product.name"></el-input>
     </el-form-item>
-    <el-form-item label="分类名" prop="types">
-      <el-select v-model="product.type" multiple filterable placeholder="请选择">
+    <el-form-item label="分类名" prop="type">
+      <el-select v-model="product.typeName"  filterable placeholder="请选择">
         <el-option v-for="item in productType" :key="item.id" :label="item.name" :value="item.id"></el-option>
       </el-select>
     </el-form-item>
     <el-form-item label="尺寸" prop="standardSize" >
-      <el-tag v-for="item in standardSize" :key="item.id" :value="item.id" style="margin:10px;" @click.native="selectStandardSize(item)">
+      <el-tag  v-for="item in standardSize" :key="item.id" :value="item.id" style="margin:10px;cursor:pointer;" @click.native="selectStandardSize(item)">
         {{item.name}}
       </el-tag>
     </el-form-item>
      <el-form-item label="颜色" prop="standardColor" >
-       <el-tag v-for="item in standardColor" :key="item.id" :value="item.id" style="margin:10px;" @click.native="selectStandardColor(item)">
+       <el-tag v-for="item in standardColor" :key="item.id" :value="item.id" style="margin:10px;cursor:pointer;" @click.native="selectStandardColor(item)">
         {{item.name}}
        </el-tag>
      </el-form-item>
     <el-form-item label="规格" prop="standardColor" >
-      <el-tag type="warning" v-for="(item, index) in colorSizeGroup" :key="item.id" :value="item.id" style="margin:10px;" closable @close="handleClose(index)">
+      <el-tag type="warning" v-for="(item, index) in colorSizeGroup" :key="item.id" :value="item.id" style="margin:10px;" closable @close="handleCloseItem(index)">
         {{item.name}}
       </el-tag>
     </el-form-item>
@@ -30,21 +30,30 @@
         <!--<el-option v-for="item in productStore.fruitTypeList" :key="item" :label="item" :value="item"></el-option>-->
       <!--</el-select>-->
     <!--</el-form-item>-->
-    <!--<el-form-item label="搜索关键字" prop="keywords">-->
-      <!--<el-tag :key="item" v-for="item in product.keywords" closable :disable-transitions="false" @close="deleteKeywords(item)">{{item}}</el-tag>-->
-      <!--<el-input v-if="isAddKeywordsShow" class="input-new-tag" v-model="addKeywords" ref="addKeywordsInput" size="small" @keyup.enter.native="handleKeywordsConfirm" @blur="handleKeywordsConfirm"></el-input>-->
-      <!--<el-button v-else size="small" @click="showAddKeywords">+ New Tag</el-button>-->
-    <!--</el-form-item>-->
+    <el-form-item label="搜索关键字" prop="keywords">
+      <el-tag type="warning" :key="item" v-for="item in keywords" closable :disable-transitions="false" @close="deleteKeywords(item)">{{item}}</el-tag>
+      <el-input v-if="isAddKeywordsShow" class="input-new-tag" v-model="addKeywords" ref="addKeywordsInput" size="small" @keyup.enter.native="handleKeywordsConfirm" @blur="handleKeywordsConfirm"></el-input>
+      <el-button v-else size="small" @click="showAddKeywords">+ New Tag</el-button>
+    </el-form-item>
     <!--<el-form-item label="产地" prop="produceArea">-->
       <!--<el-cascader v-model="product.produceArea" placeholder="请选择产地" :options="productStore.productionInfoList" filterable change-on-select></el-cascader>-->
     <!--</el-form-item>-->
-    <!--<el-form-item label="显示顺序" prop="sort">-->
-      <!--<el-input-number v-model="product.sort" :min="1" :max="9999999"></el-input-number>-->
-      <!--<span>越大越靠前</span>-->
-    <!--</el-form-item>-->
-    <!--<el-form-item label="品牌" prop="brand">-->
-      <!--<el-input v-model="product.brand"></el-input>-->
-    <!--</el-form-item>-->
+    <el-form-item label="显示顺序" prop="sort">
+      <el-input-number v-model="product.sort" :min="1" :max="9999999"></el-input-number>
+      <span>越大越靠前</span>
+    </el-form-item>
+    <el-form-item label="品牌" prop="brand">
+      <el-input v-model="product.brand"></el-input>
+    </el-form-item>
+    <el-form-item label="存储数量" prop="storeWay">
+      <el-input v-model="product.store_way"></el-input>
+    </el-form-item>
+    <el-form-item label="周销售量" prop="weekSellNum">
+      <el-input v-model="product.week_sell_num"></el-input>
+    </el-form-item>
+    <el-form-item label="总销售量" prop="totalSellNum">
+      <el-input v-model="product.total_sell_num"></el-input>
+    </el-form-item>
     <!--<el-form-item label="标签" prop="recommendTypes">-->
       <!--<el-checkbox-group v-model="product.recommendTypes">-->
         <!--<el-checkbox v-for="item in productStore.recommendList" :label="item.id" :key="item.id">{{item.name}}</el-checkbox>-->
@@ -91,19 +100,24 @@
 </template>
 
 <script>
+import bus, { product } from '../../common/bus.js'
 export default {
   name: 'AddOrEdit',
   props: ['showDialog', 'editRowId'],
   data: function () {
     return {
+      isAddKeywordsShow: false,
+      addKeywords: '',
       product: {
       },
       productType: [],
       rules: {
       },
       resetForm: {
-        status: 1
+        status: 1,
+        sort: 1
       },
+      keywords: [],
       standardColor: [],
       standardSize: [],
       colorGroup: [],
@@ -116,12 +130,45 @@ export default {
     }
   },
   methods: {
+    deleteKeywords: function (tag) {
+      this.keywords.splice(this.keywords.indexOf(tag), 1)
+    },
+    showAddKeywords: function () {
+      this.isAddKeywordsShow = true
+      this.$nextTick(_ => {
+        this.$refs.addKeywordsInput.$refs.input.focus()
+      })
+    },
+    handleKeywordsConfirm: function () {
+      let inputValue = this.addKeywords
+      if (inputValue) {
+        this.keywords.push(inputValue)
+      }
+      this.isAddKeywordsShow = false
+      this.addKeywords = ''
+    },
     show: function () {
-      console.log('show')
       this.reset()
       this.getStandardColor()
       this.getStandardSize()
       if (this.editRowId !== null) {
+        this.$http.get('/product/getProductById', {params: {productId: this.editRowId}}).then((response) => {
+          this.product = response.data
+        })
+        this.$http.get('/productKeyword/getKeywordByProductId', {params: {productId: this.editRowId}}).then((response) => {
+          this.keywords = response.data
+        })
+        this.$http.get('/productParam/getProductParamsByProductId', {params: {productId: this.editRowId}}).then((response) => {
+          console.log('getProductParamsByProductId')
+          this.colorSizeGroup = []
+          for (let colorSizeItem of response.data) {
+            this.colorSize.id = colorSizeItem.standard_size_id + '*' + colorSizeItem.standard_color_id
+            this.colorSize.name = colorSizeItem.standardSizeName + '*' + colorSizeItem.standardColorName
+            // 修改对数据进行转换一下
+            let data = Object.assign({}, JSON.parse(JSON.stringify(this.colorSize)))
+            this.colorSizeGroup.push(data)
+          }
+        })
       }
       this.$http.get('/type/getTypes').then((response) => {
         this.productType = response.data
@@ -184,7 +231,12 @@ export default {
             if (typeof (colorSize) === 'undefined' || colorSize === null) {
               this.colorSize.name = sizeGroup.name + '*' + colorGroup.name
               this.colorSize.id = sizeGroup.id + '*' + colorGroup.id
-              this.colorSizeGroup.push(this.colorSize)
+              // this.colorSizeGroup.splice(i, 1, this.colorSize)
+              // this.$set(this.colorSizeGroup, i, this.colorSize)
+              // 修改对数据进行转换一下
+              let data = Object.assign({}, JSON.parse(JSON.stringify(this.colorSize)))
+              this.colorSizeGroup.push(data)
+              // that.colorSizeGroup.push(this.colorSize)
             }
           }
         }
@@ -195,8 +247,39 @@ export default {
         this.colorSizeGroup.splice(index, 1)
       }
     },
+    handleCloseItem: function (item) {
+      this.colorSizeGroup.remove(item)
+    },
     onSubmit: function () {
-      console.log('onSubmit')
+      this.$refs['form'].validate((valid) => {
+        if (!valid) { return false }
+
+        let imgs = []
+        if (typeof (this.product.imgs) !== 'undefined' && this.product.imgs !== null) {
+          for (let img of this.product.imgs) {
+            imgs.push(img.url)
+          }
+        }
+        let colorSize = []
+        if (typeof (this.colorSizeGroup) !== 'undefined' && this.colorSizeGroup !== null) {
+          for (let colorSizeItem of this.colorSizeGroup) {
+            colorSize.push(colorSizeItem.id)
+          }
+        }
+        let postData = Object.assign(this.resetForm, this.product, {keywords: this.keywords}, {colorSize: colorSize}, {imgs: imgs})
+        console.log('postData')
+        console.log(postData)
+        this.$http.post('/product/saveProduct', postData, {showLoading: true}).then((response) => {
+          this.$emit('update:showDialog', false) // 关闭弹窗
+          if (this.product.id !== '') { // 编辑完成（刷新列表当前页）
+            this.$message({type: 'success', message: '编辑数据成功'})
+            bus.$emit(product.edit, postData)
+          } else { // 新增完成（跳到第一页）
+            this.$message({type: 'success', message: '添加数据成功'})
+            bus.$emit(product.add, postData)
+          }
+        })
+      })
     },
     handleRemoveImg: function (file, fileList) {
       this._imgUploadChange(file, fileList)
@@ -204,7 +287,8 @@ export default {
     _imgUploadChange: function (file, fileList) {
       this.product.imgs = []
       for (let img of fileList) {
-        this.product.imgs.push({url: img.response ? this._downloadFilePath + img.response : img.url})
+        let data = Object.assign({}, JSON.parse(JSON.stringify({url: img.response ? this._downloadFilePath + img.response : img.url})))
+        this.product.imgs.push(data)
       }
     },
     handleAvatarScucess: function (response, file, fileList) {
