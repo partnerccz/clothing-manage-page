@@ -20,7 +20,7 @@ export default {
   height: 100%;
   box-sizing:border-box;
   width: 100%;
-  overflow: hidden;
-  /*background-color: red;*/
+  overflow: auto;
+  padding-bottom: 30px;
 }
 </style>

@@ -6,7 +6,7 @@
       <el-input v-model="product.name"></el-input>
     </el-form-item>
     <el-form-item label="分类名" prop="type">
-      <el-select v-model="product.typeName"  filterable placeholder="请选择">
+      <el-select v-model="product.type"  filterable placeholder="请选择">
         <el-option v-for="item in productType" :key="item.id" :label="item.name" :value="item.id"></el-option>
       </el-select>
     </el-form-item>
@@ -45,14 +45,14 @@
     <el-form-item label="品牌" prop="brand">
       <el-input v-model="product.brand"></el-input>
     </el-form-item>
-    <el-form-item label="存储数量" prop="storeWay">
-      <el-input v-model="product.store_way"></el-input>
+    <el-form-item label="存储数量" prop="store_way">
+      <el-input v-model="product.storeWay"></el-input>
     </el-form-item>
-    <el-form-item label="周销售量" prop="weekSellNum">
-      <el-input v-model="product.week_sell_num"></el-input>
+    <el-form-item label="周销售量" prop="week_sell_num">
+      <el-input v-model="product.weekSellNum"></el-input>
     </el-form-item>
-    <el-form-item label="总销售量" prop="totalSellNum">
-      <el-input v-model="product.total_sell_num"></el-input>
+    <el-form-item label="总销售量" prop="total_sell_num">
+      <el-input v-model="product.totalSellNum"></el-input>
     </el-form-item>
     <!--<el-form-item label="标签" prop="recommendTypes">-->
       <!--<el-checkbox-group v-model="product.recommendTypes">-->
@@ -86,7 +86,7 @@
     <!--</el-form-item>-->
     <el-form-item label="图片" prop="imgs">
       <el-upload :action="_uploadFilePath" list-type="picture-card" :limit="20"
-                 :file-list="product.imgs" :on-remove="handleRemoveImg"
+                 :file-list="productImg.imgs" :on-remove="handleRemoveImg"
                  :on-success="handleAvatarScucess" :before-upload="beforeAvatarUpload">
         <i class="el-icon-plus"></i>
       </el-upload>
@@ -101,6 +101,7 @@
 
 <script>
 import bus, { product } from '../../common/bus.js'
+import { objNullToBlank } from '../../common/utils.js'
 export default {
   name: 'AddOrEdit',
   props: ['showDialog', 'editRowId'],
@@ -109,6 +110,9 @@ export default {
       isAddKeywordsShow: false,
       addKeywords: '',
       product: {
+      },
+      productImg: {
+        imgs: []
       },
       productType: [],
       rules: {
@@ -154,9 +158,21 @@ export default {
       if (this.editRowId !== null) {
         this.$http.get('/product/getProductById', {params: {productId: this.editRowId}}).then((response) => {
           this.product = response.data
+          this.product.totalSellNum = response.data.total_sell_num
+          this.product.storeWay = response.data.store_way
+          this.product.weekSellNum = response.data.week_sell_num
+          this.product.type = response.data.typeName
         })
         this.$http.get('/productKeyword/getKeywordByProductId', {params: {productId: this.editRowId}}).then((response) => {
           this.keywords = response.data
+        })
+        this.$http.get('/productImg/getProductImg/', {params: {productId: this.editRowId}}).then((response) => {
+          let imgs = []
+          for (let img of response.data) {
+            imgs.push({url: img.img_url})
+          }
+          delete response.data
+          this.productImg = Object.assign({}, objNullToBlank(response.data), {imgs: imgs})
         })
         this.$http.get('/productParam/getProductParamsByProductId', {params: {productId: this.editRowId}}).then((response) => {
           console.log('getProductParamsByProductId')
@@ -255,8 +271,9 @@ export default {
         if (!valid) { return false }
 
         let imgs = []
-        if (typeof (this.product.imgs) !== 'undefined' && this.product.imgs !== null) {
-          for (let img of this.product.imgs) {
+        if (typeof (this.productImg.imgs) !== 'undefined' && this.productImg.imgs !== null) {
+          for (let img of this.productImg.imgs) {
+            console.log('imgUrl: ' + img.url)
             imgs.push(img.url)
           }
         }
@@ -266,6 +283,11 @@ export default {
             colorSize.push(colorSizeItem.id)
           }
         }
+        console.log('resetForm：' + this.resetForm)
+        console.log('product：' + this.product)
+        console.log('keywords：' + this.keywords)
+        console.log('colorSize：' + colorSize)
+        console.log('imgs：' + imgs)
         let postData = Object.assign(this.resetForm, this.product, {keywords: this.keywords}, {colorSize: colorSize}, {imgs: imgs})
         console.log('postData')
         console.log(postData)
@@ -285,10 +307,10 @@ export default {
       this._imgUploadChange(file, fileList)
     },
     _imgUploadChange: function (file, fileList) {
-      this.product.imgs = []
+      this.productImg.imgs = []
       for (let img of fileList) {
         let data = Object.assign({}, JSON.parse(JSON.stringify({url: img.response ? this._downloadFilePath + img.response : img.url})))
-        this.product.imgs.push(data)
+        this.productImg.imgs.push(data)
       }
     },
     handleAvatarScucess: function (response, file, fileList) {

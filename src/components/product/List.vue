@@ -74,7 +74,7 @@
       :page-sizes="[10, 20, 50, 100]"
       :page-size="pageInfo.pageSize"
       layout="total, sizes, prev, pager, next"
-      :total="pageInfo.totalRec" class="table-pager">
+      :total="pageInfo.totalRec" class="table-pager" style="padding-top: 15px;padding-left: 15px;">
     </el-pagination>
     <component :is="editCompName" :showDialog.sync="showEdit" :editRowId="editRowId"></component>
   </div>

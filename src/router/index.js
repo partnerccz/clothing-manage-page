@@ -5,6 +5,8 @@ import {indexUrl} from '../common/const.js'
 const Home = resolve => require(['../components/Home.vue'], resolve)
 const Menu = resolve => require(['../components/sys/Menu'], resolve)
 const Product = resolve => require(['../components/product/Index'], resolve)
+const ProductColor = resolve => require(['../components/product/param/color/Index'], resolve)
+const ProductSize = resolve => require(['../components/product/param/size/Index'], resolve)
 const Index = resolve => require(['../components/sys/Home'], resolve)
 
 Vue.use(Router)
@@ -35,6 +37,14 @@ export default new Router({
           path: '/product',
           name: 'Product',
           component: Product
+        }, {
+          path: '/productColor',
+          name: 'ProductColor',
+          component: ProductColor
+        }, {
+          path: '/productSize',
+          name: 'ProductSize',
+          component: ProductSize
         }
       ]
     }

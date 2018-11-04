@@ -27,10 +27,15 @@ export const product = {
   edit: 'product-edit'
 }
 
-export const productStandard = {
-  search: 'productStandard-search',
-  add: 'productStandard-add',
-  edit: 'productStandard-edit'
+export const productStandardColor = {
+  search: 'productStandardColor-search',
+  add: 'productStandardColor-add',
+  edit: 'productStandardColor-edit'
+}
+export const productStandardSize = {
+  search: 'productStandardSize-search',
+  add: 'productStandardSize-add',
+  edit: 'productStandardSize-edit'
 }
 
 export const order = {
